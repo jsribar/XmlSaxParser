@@ -17,13 +17,10 @@ namespace XmlSaxParser
             NodeType = nodeType;
         }
 
-        public virtual void AddChild(XmlNode child)
-        {
-            children.Add(child);
-        }
+        public abstract void AddChild(XmlNode child);
 
         public IEnumerable<XmlNode> Children => children;
 
-        private List<XmlNode> children = new List<XmlNode>();
+        protected List<XmlNode> children = new List<XmlNode>();
     }
 }

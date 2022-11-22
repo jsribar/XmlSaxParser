@@ -14,6 +14,11 @@ namespace XmlSaxParser
             attributes.Add(name, value);
         }
 
+        public override void AddChild(XmlNode child)
+        {
+            children.Add(child);
+        }
+
         public string Name { get; private set; }
 
         private Dictionary<string, string> attributes = new Dictionary<string, string>();
