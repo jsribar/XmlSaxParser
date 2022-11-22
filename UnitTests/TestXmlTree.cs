@@ -17,8 +17,9 @@ namespace UnitTests
         public void Initialize()
         {
             tree = new XmlTree();
-            parser.ElementStart += tree.ElementStartHandler;
-            parser.ElementEnd += tree.ElementEndtHandler;
+            parser.XmlElementStart += tree.ElementStartHandler;
+            parser.XmlElementEnd += tree.ElementEndHandler;
+            parser.XmlText += tree.TextHandler;
         }
 
         [TestMethod]
@@ -43,6 +44,7 @@ namespace UnitTests
             Assert.IsNotNull(tree.Root);
             Assert.AreEqual("document", tree.Root.Name);
         }
+
         [TestMethod]
         public void XmlTreeContainsRootAndTwoSiblingChildren()
         {
@@ -53,10 +55,17 @@ namespace UnitTests
 
             Assert.IsNotNull(tree.Root);
             Assert.AreEqual("document", tree.Root.Name);
+            
             Assert.AreEqual(2, tree.Root.Children.Count());
-            Assert.AreEqual("child1", tree.Root.Children.ElementAt(0).Name);
-            Assert.AreEqual("child2", tree.Root.Children.ElementAt(1).Name);
+            var child1 = tree.Root.Children.ElementAt(0);
+            Assert.AreEqual(NodeType.Element, child1.NodeType);
+            Assert.AreEqual("child1", ((XmlElement)tree.Root.Children.ElementAt(0)).Name);
+
+            var child2 = tree.Root.Children.ElementAt(1);
+            Assert.AreEqual(NodeType.Element, child2.NodeType);
+            Assert.AreEqual("child2", ((XmlElement)tree.Root.Children.ElementAt(1)).Name);
         }
+
         [TestMethod]
         public void XmlTreeContainsRootWithChildAndGrandChild()
         {
@@ -70,10 +79,61 @@ namespace UnitTests
             
             Assert.AreEqual(1, tree.Root.Children.Count());
             var child = tree.Root.Children.ElementAt(0);
-            Assert.AreEqual("child", child.Name);
+            Assert.AreEqual(NodeType.Element, child.NodeType);
+            Assert.AreEqual("child", ((XmlElement)child).Name);
             
             Assert.AreEqual(1, child.Children.Count());
-            Assert.AreEqual("grandchild", child.Children.ElementAt(0).Name);
+            var grandchild = child.Children.ElementAt(0);
+            Assert.AreEqual(NodeType.Element, grandchild.NodeType);
+            Assert.AreEqual("grandchild", ((XmlElement)child.Children.ElementAt(0)).Name);
+        }
+
+        [TestMethod]
+        public void XmlTreeContainsSingleTextNode()
+        {
+            using (TextReader reader = new StringReader("<document>text</document>"))
+            {
+                var result = parser.Parse(reader);
+            }
+
+            Assert.IsNotNull(tree.Root);
+            Assert.AreEqual("document", tree.Root.Name);
+            
+            Assert.AreEqual(1, tree.Root.Children.Count());
+            var child = tree.Root.Children.ElementAt(0);
+            Assert.AreEqual(NodeType.Text, child.NodeType);
+            Assert.AreEqual("text", ((XmlText)child).Text);
+        }
+
+        [TestMethod]
+        public void XmlTreeRootContainsMultipleTextAndElementNodes()
+        {
+            using (TextReader reader = new StringReader("<document>text0<child>text1</child>text2</document>"))
+            {
+                var result = parser.Parse(reader);
+            }
+
+            Assert.IsNotNull(tree.Root);
+            Assert.AreEqual("document", tree.Root.Name);
+            
+            Assert.AreEqual(3, tree.Root.Children.Count());
+
+            var child0 = tree.Root.Children.ElementAt(0);
+            Assert.AreEqual(NodeType.Text, child0.NodeType);
+            Assert.AreEqual("text0", ((XmlText)child0).Text);
+
+            var child1 = tree.Root.Children.ElementAt(1);
+            Assert.AreEqual(NodeType.Element, child1.NodeType);
+            Assert.AreEqual("child", ((XmlElement)child1).Name);
+
+            Assert.AreEqual(1, child1.Children.Count());
+            var child2 = child1.Children.ElementAt(0);
+            Assert.AreEqual(NodeType.Text, child2.NodeType);
+            Assert.AreEqual("text1", ((XmlText)child2).Text);
+
+            var child3 = tree.Root.Children.ElementAt(2);
+            Assert.AreEqual(NodeType.Text, child3.NodeType);
+            Assert.AreEqual("text2", ((XmlText)child3).Text);
         }
     }
 }

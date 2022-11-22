@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XmlSaxParser
 {
@@ -15,7 +12,7 @@ namespace XmlSaxParser
         // Stack holds current hierarchy of elements. Last element corresponds to the active element and this stack is used to identify parent for a new element.
         private Stack<XmlElement> elementStack = new Stack<XmlElement>();
 
-        public void ElementStartHandler(object sender, ElementStartEventArgs args)
+        public void ElementStartHandler(object sender, XmlElementStartEventArgs args)
         {
             var newElement = new XmlElement(args.Name);
             // If element stack is empty, this element is the root.
@@ -32,7 +29,7 @@ namespace XmlSaxParser
             elementStack.Push(newElement);
         }
 
-        public void ElementEndtHandler(object sender, ElementEndEventArgs args)
+        public void ElementEndHandler(object sender, XmlElementEndEventArgs args)
         {
             if (elementStack.Count == 0)
             {
@@ -43,6 +40,16 @@ namespace XmlSaxParser
             {
                 throw new Exception("Closing tag name is different from opening tag name");
             }
+        }
+
+        public void TextHandler(object sender, XmlTextEventArgs args)
+        {
+            if (elementStack.Count == 0)
+            {
+                throw new Exception("XmlText node must have parent XmlElement node");
+            }
+            // Add XmlText node to parent XmlElement.
+            elementStack.Peek().AddChild(new XmlText(args.Text));
         }
     }
 }

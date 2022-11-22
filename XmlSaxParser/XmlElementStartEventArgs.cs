@@ -2,9 +2,9 @@
 
 namespace XmlSaxParser
 {
-    public class ElementEndEventArgs : EventArgs
+    public class XmlElementStartEventArgs : EventArgs
     {
-        public ElementEndEventArgs(string name)
+        public XmlElementStartEventArgs(string name)
         {
             Name = name;
         }

@@ -10,11 +10,13 @@ namespace XmlSaxParser
 {
     public class SaxParser
     {
-        public delegate void ElementStartEventHandler(object sender, ElementStartEventArgs args);
-        public delegate void ElementEndEventHandler(object sender, ElementEndEventArgs args);
+        public delegate void XmlElementStartEventHandler(object sender, XmlElementStartEventArgs args);
+        public delegate void XmlElementEndEventHandler(object sender, XmlElementEndEventArgs args);
+        public delegate void XmlTextEventHandler(object sender, XmlTextEventArgs args);
 
-        public event ElementStartEventHandler ElementStart;
-        public event ElementEndEventHandler ElementEnd;
+        public event XmlElementStartEventHandler XmlElementStart;
+        public event XmlElementEndEventHandler XmlElementEnd;
+        public event XmlTextEventHandler XmlText;
 
         public SaxParser()
         {
@@ -37,6 +39,9 @@ namespace XmlSaxParser
                         case XmlNodeType.EndElement:
                             OnElementEnd(reader.Name);
                             break;
+                        case XmlNodeType.Text:
+                            OnText(await reader.GetValueAsync());
+                            break;
                         default:
                             //Console.WriteLine("Other node {0} with value {1}",
                             //                reader.NodeType, reader.Value);
@@ -48,11 +53,15 @@ namespace XmlSaxParser
 
         protected virtual void OnElementStart(string name)
         {
-            ElementStart?.Invoke(this, new ElementStartEventArgs(name));
+            XmlElementStart?.Invoke(this, new XmlElementStartEventArgs(name));
         }
         protected virtual void OnElementEnd(string name)
         {
-            ElementEnd?.Invoke(this, new ElementEndEventArgs(name));
+            XmlElementEnd?.Invoke(this, new XmlElementEndEventArgs(name));
+        }
+        protected virtual void OnText(string text)
+        {
+            XmlText?.Invoke(this, new XmlTextEventArgs(text));
         }
     }
 }
